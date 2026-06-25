@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 type KnowledgeEntry = {
   topic: string;
   content: string;
@@ -25,7 +27,7 @@ export default function InfoModal({
   useEffect(() => {
     if (isOpen && category) {
       setIsLoading(true);
-      fetch(`http://localhost:4000/api/knowledge?category=${category}`)
+      fetch(`${API_BASE}/api/knowledge?category=${category}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.entries) {
