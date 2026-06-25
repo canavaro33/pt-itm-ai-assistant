@@ -16,10 +16,14 @@ import userRouter from './routes/user';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Middleware
+// CORS: accept comma-separated origins from env, fallback to localhost
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://127.0.0.1:3000')
+  .split(',')
+  .map((o) => o.trim());
+
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'x-employee-id', 'Authorization'],
