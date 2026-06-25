@@ -29,7 +29,7 @@ A full-stack web application featuring a luxury glassmorphic UI with an integrat
 | Frontend   | Next.js 14, TypeScript, Tailwind CSS, Three.js |
 | Backend    | Express.js, TypeScript            |
 | Database   | PostgreSQL + Prisma ORM           |
-| AI         | Anthropic Claude / OpenAI GPT-4o  |
+| AI         | Open Router                       |
 
 ---
 
@@ -39,7 +39,7 @@ A full-stack web application featuring a luxury glassmorphic UI with an integrat
 
 - **Node.js** 18.17+ 
 - **PostgreSQL** running on localhost:5432
-- **AI API Key** (Anthropic or OpenAI)
+- **AI API Key** (Open Router)
 
 ### 1. Clone & Install
 
@@ -161,12 +161,12 @@ pt-itm-portal/
 
 | Token       | Value                        |
 | ----------- | ---------------------------- |
-| Background  | `#0d0d0d` / `#111111`       |
+| Background  | `#0d0d0d` / `#111111`        |
 | Accent      | `#c8623a` (terracotta)       |
 | Text        | `#ffffff` / `#f5f0e8` (cream)|
 | Glass       | `bg-white/5 backdrop-blur-md`|
 | Font Body   | Inter                        |
-| Font Display| Outfit                       |
+| Font Display| Satoshi                      |
 
 ---
 
