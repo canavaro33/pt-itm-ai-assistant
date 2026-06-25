@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum KnowledgeCategory {
+  safety
+  wellness
+  corporate
+  hr
+}
+
+model CompanyKnowledge {
+  id        String            @id @default(uuid())
+  category  KnowledgeCategory
+  topic     String
+  content   String
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  @@map("company_knowledge")
+}
+
+model ChatHistory {
+  id          String   @id @default(uuid())
+  employeeId  String?  @map("employee_id")
+  userMessage String   @map("user_message")
+  aiResponse  String   @map("ai_response")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("chat_history")
+}
+
+model ChatSession {
+  id        String        @id @default(cuid())
+  userId    String
+  title     String        @default("New Chat")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  user      Employee      @relation(fields: [userId], references: [id])
+  messages  ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  role      String      // "user" | "assistant"
+  content   String
+  createdAt DateTime    @default(now()) @map("created_at")
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model Employee {
+  id           String        @id @default(uuid())
+  name         String
+  employeeId   String        @unique @map("employee_id")
+  department   String
+  role         String
+  passwordHash String        @map("password_hash")
+  chatSessions ChatSession[]
+
+  // Certifications stored as JSON array
+  certifications Json?      @default("[]")
+
+  // Work location
+  siteName      String?
+  shiftSchedule String?
+
+  // Profile avatar
+  avatarUrl    String?        @map("avatar_url")
+
+  // Notification preferences
+  emailAlerts       Boolean @default(true) @map("email_alerts")
+  pushNotifications Boolean @default(true) @map("push_notifications")
+
+  @@map("employees")
+}
