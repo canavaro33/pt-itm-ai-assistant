@@ -5,7 +5,9 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting seed...');
 
-  // Clean existing data
+  // Clean existing data (order matters due to foreign keys)
+  await prisma.chatMessage.deleteMany();
+  await prisma.chatSession.deleteMany();
   await prisma.chatHistory.deleteMany();
   await prisma.companyKnowledge.deleteMany();
   await prisma.employee.deleteMany();

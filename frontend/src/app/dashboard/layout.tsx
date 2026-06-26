@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import ChatOverlay from '@/components/ChatOverlay';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,11 +22,28 @@ export default function DashboardLayout({
   const [chatInitialInput, setChatInitialInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close sidebar on route change
+  // Close sidebar & dropdown on route change
   useEffect(() => {
     setIsSidebarOpen(false);
+    setIsProfileDropdownOpen(false);
   }, [pathname]);
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -237,25 +254,112 @@ export default function DashboardLayout({
             />
           </div>
 
-          {/* Right Side: User Profile */}
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end">
-              <span className="text-sm font-heading font-medium text-white">{user?.name}</span>
-              <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-navy/30 text-navy-glow border border-navy/50 mt-0.5 font-heading">
-                {user?.department}
-              </span>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-accent to-violet-glow flex items-center justify-center text-sm font-heading font-bold shadow-[0_0_15px_rgba(139,92,246,0.35)] ring-2 ring-white/10 overflow-hidden">
-              {user?.avatarUrl ? (
-                <img
-                  src={`${API_BASE}${user.avatarUrl}`}
-                  alt={user.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                initials
+          {/* Right Side: User Profile with Dropdown */}
+          <div className="relative" ref={profileDropdownRef}>
+            <button
+              onClick={() => setIsProfileDropdownOpen((prev) => !prev)}
+              className="flex items-center gap-4 cursor-pointer group"
+              aria-haspopup="true"
+              aria-expanded={isProfileDropdownOpen}
+              id="profile-menu-button"
+            >
+              <div className="flex flex-col items-end">
+                <span className="text-sm font-heading font-medium text-white group-hover:text-white/90 transition-colors">{user?.name}</span>
+                <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-navy/30 text-navy-glow border border-navy/50 mt-0.5 font-heading">
+                  {user?.department}
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-accent to-violet-glow flex items-center justify-center text-sm font-heading font-bold shadow-[0_0_15px_rgba(139,92,246,0.35)] ring-2 ring-white/10 overflow-hidden transition-all duration-200 group-hover:ring-violet-accent/40 group-hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]">
+                {user?.avatarUrl ? (
+                  <img
+                    src={`${API_BASE}${user.avatarUrl}`}
+                    alt={user.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  initials
+                )}
+              </div>
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            <AnimatePresence>
+              {isProfileDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                  transition={{ duration: 0.18, ease: 'easeOut' }}
+                  className="absolute right-0 top-full mt-3 w-56 rounded-xl bg-midnight-card border border-white/[0.08] shadow-[0_16px_48px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.03)] backdrop-blur-xl overflow-hidden z-50"
+                  role="menu"
+                  aria-labelledby="profile-menu-button"
+                >
+                  {/* User Info Header */}
+                  <div className="px-4 py-3 border-b border-white/[0.06]">
+                    <p className="text-sm font-heading font-medium text-white truncate">{user?.name}</p>
+                    <p className="text-xs text-slate-400 truncate mt-0.5">{user?.department}</p>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-1.5">
+                    {/* Edit Profile */}
+                    <Link
+                      href="/dashboard/profile"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-heading text-slate-300 hover:text-white hover:bg-white/[0.06] transition-all duration-200 group/item"
+                      role="menuitem"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="text-slate-400 group-hover/item:text-violet-accent transition-colors"
+                      >
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      Edit Profile
+                    </Link>
+
+                    {/* Divider */}
+                    <div className="my-1.5 border-t border-white/[0.06]" />
+
+                    {/* Logout */}
+                    <button
+                      onClick={() => {
+                        setIsProfileDropdownOpen(false);
+                        logout();
+                        router.replace('/');
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-heading text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200 group/item"
+                      role="menuitem"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="text-red-400 group-hover/item:text-red-300 transition-colors"
+                      >
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
+                      Log Out
+                    </button>
+                  </div>
+                </motion.div>
               )}
-            </div>
+            </AnimatePresence>
           </div>
         </header>
 
